@@ -1,0 +1,186 @@
+﻿@model HomeCalcViewModel
+@{
+    ViewData["Title"] = "Расчёт охлаждения термически тонких тел";
+}
+
+<div class="container">
+    <h2>@ViewData["Title"]</h2>
+
+    <form asp-action="Calc" method="post">
+        <div class="row">
+            <div class="col-md-6">
+                <div class="form-group">
+                    <label>Форма тела:</label>
+                    <select asp-for="Shape" class="form-control">
+                        <option value="cylinder">Цилиндр</option>
+                        <option value="sphere">Шар</option>
+                        <option value="plate">Пластина</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>Ориентация:</label>
+                    <select asp-for="Orientation" class="form-control">
+                        <option value="vertical">Вертикальная</option>
+                        <option value="horizontal">Горизонтальная</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>Материал:</label>
+                    <select asp-for="Material" class="form-control">
+                        <option value="steel">Сталь</option>
+                        <option value="aluminum">Алюминий</option>
+                        <option value="copper">Медь</option>
+                        <option value="glass">Стекло</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>Начальная температура тела (°C):</label>
+                    <input asp-for="InitialTemp" class="form-control" />
+                </div>
+
+                <div class="form-group">
+                    <label>Температура среды (°C):</label>
+                    <input asp-for="EnvTemp" class="form-control" />
+                </div>
+            </div>
+
+            <div class="col-md-6">
+                <div class="form-group">
+                    <label>Время охлаждения (с):</label>
+                    <input asp-for="CoolingTime" class="form-control" />
+                </div>
+
+                <div class="form-group">
+                    <label>Коэффициент излучения:</label>
+                    <input asp-for="Emissivity" class="form-control" value="0.9" />
+                </div>
+
+                <!-- Динамические поля в зависимости от формы -->
+                <div id="cylinder-fields" class="shape-fields">
+                    <div class="form-group">
+                        <label>Радиус (м):</label>
+                        <input asp-for="Radius" class="form-control" />
+                    </div>
+                    <div class="form-group">
+                        <label>Высота (м):</label>
+                        <input asp-for="Height" class="form-control" />
+                    </div>
+                </div>
+
+                <div id="sphere-fields" class="shape-fields" style="display:none;">
+                    <div class="form-group">
+                        <label>Радиус (м):</label>
+                        <input asp-for="Radius" class="form-control" />
+                    </div>
+                </div>
+
+                <div id="plate-fields" class="shape-fields" style="display:none;">
+                    <div class="form-group">
+                        <label>Длина (м):</label>
+                        <input asp-for="Length" class="form-control" />
+                    </div>
+                    <div class="form-group">
+                        <label>Ширина (м):</label>
+                        <input asp-for="Width" class="form-control" />
+                    </div>
+                    <div class="form-group">
+                        <label>Толщина (м):</label>
+                        <input asp-for="Height" class="form-control" />
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="text-center mt-3">
+            <button type="submit" name="action" value="show" class="btn btn-primary">Рассчитать</button>
+            <button type="submit" name="action" value="add" class="btn btn-secondary">Сохранить вариант</button>
+        </div>
+    </form>
+
+    @if (Model.Result != null)
+    {
+        <div class="mt-4">
+            <h3>Результаты:</h3>
+
+            <div class="alert alert-info">
+                Число Био: @Model.Result.First().BioNumber.ToString("F4")
+                @if (Model.Result.First().BioNumber >= 0.1)
+                {
+                    <span class="text-danger"> - Тело не является термически тонким!</span>
+                }
+                else
+                {
+                    <span class="text-success"> - Тело термически тонкое</span>
+                }
+            </div>
+
+            <table class="table table-bordered">
+                <thead>
+                    <tr>
+                        <th>Время, с</th>
+                        <th>Температура, °C</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in Model.Result)
+                    {
+                        <tr>
+                            <td>@item.Time.ToString("F1")</td>
+                            <td>@item.Temperature.ToString("F1")</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+
+            <div class="chart-container">
+                <canvas id="tempChart"></canvas>
+            </div>
+        </div>
+
+        <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+        <script>
+            const ctx = document.getElementById('tempChart').getContext('2d');
+            const chart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: @Html.Raw(Json.Serialize(Model.Result.Select(r => r.Time.ToString("F1")))),
+                    datasets: [{
+                        label: 'Температура тела (°C)',
+                        data: @Html.Raw(Json.Serialize(Model.Result.Select(r => r.Temperature))),
+                        borderColor: 'rgb(75, 192, 192)',
+                        tension: 0.1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        x: {
+                            title: {
+                                display: true,
+                                text: 'Время (с)'
+                            }
+                        },
+                        y: {
+                            title: {
+                                display: true,
+                                text: 'Температура (°C)'
+                            }
+                        }
+                    }
+                }
+            });
+
+            // Показываем/скрываем поля в зависимости от выбранной формы
+            document.getElementById('Shape').addEventListener('change', function() {
+                document.querySelectorAll('.shape-fields').forEach(el => el.style.display = 'none');
+                document.getElementById(this.value + '-fields').style.display = 'block';
+            });
+
+            // Инициализация при загрузке
+            document.getElementById('Shape').dispatchEvent(new Event('change'));
+        </script>
+    }
+</div>

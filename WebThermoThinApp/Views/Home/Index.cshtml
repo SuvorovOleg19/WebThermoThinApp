@@ -1,8 +1,40 @@
-﻿@{
-    ViewData["Title"] = "Home Page";
+﻿@using WebThermoThinApp.Data
+@model List<Variant>
+@{
+    ViewData["Title"] = "История расчётов";
 }
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
+<h2>@ViewData["Title"]</h2>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>Форма</th>
+            <th>Материал</th>
+            <th>Нач. темп.</th>
+            <th>Темп. среды</th>
+            <th>Время охл.</th>
+            <th>Действия</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model)
+        {
+            <tr>
+                <td>@item.Shape</td>
+                <td>@item.Material</td>
+                <td>@item.InitialTemp °C</td>
+                <td>@item.EnvTemp °C</td>
+                <td>@item.CoolingTime с</td>
+                <td>
+                    <a href="/home/calc/@item.Id" class="btn btn-sm btn-primary">Открыть</a>
+                    <a href="/home/delete/@item.Id" class="btn btn-sm btn-danger">Удалить</a>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+<div class="text-center mt-3">
+    <a href="/home/calc" class="btn btn-primary">Новый расчёт</a>
 </div>
