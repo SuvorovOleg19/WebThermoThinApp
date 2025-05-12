@@ -7,6 +7,9 @@ namespace WebThermoThinApp.Models
         public double Time { get; set; }
         public double Temperature { get; set; }
         public double BioNumber { get; set; }
+        public double KinematicViscosity { get; set; }  // Кинематическая вязкость (м²/с)
+        public double PrandtlNumber { get; set; }       // Число Прандтля
+        public double ThermalConductivity { get; set; } // Коэффициент теплопроводности (Вт/(м·K))
     }
 
     public class CalcModel
@@ -32,9 +35,13 @@ namespace WebThermoThinApp.Models
 
             // 2. Расчёт коэффициента теплоотдачи излучением
             double alphaRad = CalculateRadiationHeatTransferCoefficient();
-
+            // Рассчитываем свойства среды
+            double prandtl = CalculatePrandtlNumber(EnvTemp);
+            double thermalCond = CalculateThermalConductivity(EnvTemp);
+            double kinematicViscosity = CalculateKinematicViscosity(EnvTemp);
             // 3. Расчёт коэффициента теплоотдачи конвекцией
-            double alphaConv = CalculateConvectionHeatTransferCoefficient();
+            double alphaConv = CalculateConvectionHeatTransferCoefficient(kinematicViscosity);
+
 
             // 4. Суммарный коэффициент теплоотдачи
             double alphaSum = alphaRad + alphaConv;
@@ -55,7 +62,10 @@ namespace WebThermoThinApp.Models
                 {
                     Time = t,
                     Temperature = temp,
-                    BioNumber = bioNumber
+                    BioNumber = bioNumber,
+                    KinematicViscosity = kinematicViscosity,
+                    PrandtlNumber = prandtl,
+                    ThermalConductivity = thermalCond
                 });
             }
 
@@ -83,10 +93,10 @@ namespace WebThermoThinApp.Models
             return c * (Math.Pow(t0 / 100, 4) - Math.Pow(tn / 100, 4)) / (t0 - tn);
         }
 
-        public double CalculateConvectionHeatTransferCoefficient()
+        public double CalculateConvectionHeatTransferCoefficient(double kinematicViscosity)
         {
             double characteristicLength = GetCharacteristicLength();
-            double grashof = CalculateGrashofNumber(characteristicLength);
+            double grashof = CalculateGrashofNumber(characteristicLength, kinematicViscosity);
             double prandtl = 0.7; // Для воздуха
 
             double nusselt = CalculateNusseltNumber(grashof, prandtl);
@@ -106,14 +116,50 @@ namespace WebThermoThinApp.Models
             };
         }
 
-        public double CalculateGrashofNumber(double l)
+        public double CalculateGrashofNumber(double l, double kinematicViscosity)
         {
             double g = 9.81;
             double beta = 1 / 273.0;
             double deltaT = InitialTemp - EnvTemp;
-            double kinematicViscosity = 15.89e-6; // Для воздуха при 20°C, м²/с
 
             return g * beta * deltaT * Math.Pow(l, 3) / Math.Pow(kinematicViscosity, 2);
+        }
+        public double CalculateKinematicViscosity(double temperatureCelsius)
+        {
+            // Температура в Кельвинах
+            double temperatureKelvin = temperatureCelsius + 273.15;
+
+            // Динамическая вязкость воздуха (формула Сатерленда)
+            double dynamicViscosity = 1.458e-6 * Math.Pow(temperatureKelvin, 1.5) /
+                                    (temperatureKelvin + 110.4);
+
+            // Плотность воздуха (упрощённая формула)
+            double density = 1.293 * (273.15 / temperatureKelvin);
+
+            // Кинематическая вязкость (ν = μ/ρ)
+            return dynamicViscosity / density;
+        }
+        // Методы для расчета свойств воздуха
+        public double CalculatePrandtlNumber(double temperatureCelsius)
+        {
+            double T = temperatureCelsius + 273.15; // Переводим в Кельвины
+
+            // Коэффициент теплопроводности воздуха (Вт/(м·K))
+            double thermalConductivity = 0.0241 * Math.Pow(T / 273.15, 0.9);
+
+            // Динамическая вязкость (формула Сатерленда)
+            double dynamicViscosity = 1.458e-6 * Math.Pow(T, 1.5) / (T + 110.4);
+
+            // Удельная теплоемкость (Дж/(кг·K))
+            double specificHeat = 1005 + (T - 273.15) / 10;
+
+            return (dynamicViscosity * specificHeat) / thermalConductivity;
+        }
+
+        public double CalculateThermalConductivity(double temperatureCelsius)
+        {
+            double T = temperatureCelsius + 273.15;
+            return 0.0241 * Math.Pow(T / 273.15, 0.9); // Вт/(м·K)
         }
 
         public double CalculateNusseltNumber(double gr, double pr)

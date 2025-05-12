@@ -18,12 +18,13 @@
                     </select>
                 </div>
 
-                <div class="form-group">
-                    <label>Ориентация:</label>
+                <div id="OrientationGroup" class="form-group">
+                    <label asp-for="Orientation" class="control-label"></label>
                     <select asp-for="Orientation" class="form-control">
                         <option value="vertical">Вертикальная</option>
                         <option value="horizontal">Горизонтальная</option>
                     </select>
+                    <span asp-validation-for="Orientation" class="text-danger"></span>
                 </div>
 
                 <div class="form-group">
@@ -55,7 +56,7 @@
 
                 <div class="form-group">
                     <label>Коэффициент излучения:</label>
-                    <input asp-for="Emissivity" class="form-control" value="0.9" />
+                    <input asp-for="Emissivity" class="form-control" />
                 </div>
 
                 <!-- Динамические поля в зависимости от формы -->
@@ -103,6 +104,25 @@
     @if (Model.Result != null)
     {
         <div class="mt-4">
+            <h3>Параметры среды:</h3>
+
+            <div class="parameters-grid">
+                <div class="parameter">
+                    <span class="parameter-name">Кинематическая вязкость (ν):</span>
+                    <span class="parameter-value">@Model.Result.First().KinematicViscosity.ToString("E4") м²/с</span>
+                </div>
+
+                <div class="parameter">
+                    <span class="parameter-name">Число Прандтля (Pr):</span>
+                    <span class="parameter-value">@Model.Result.First().PrandtlNumber.ToString("F4")</span>
+                </div>
+
+                <div class="parameter">
+                    <span class="parameter-name">Теплопроводность (λ):</span>
+                    <span class="parameter-value">@Model.Result.First().ThermalConductivity.ToString("E4") Вт/(м·K)</span>
+                </div>
+            </div>
+
             <h3>Результаты:</h3>
 
             <div class="alert alert-info">
@@ -184,3 +204,50 @@
         </script>
     }
 </div>
+
+<style>
+    .parameters-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 15px;
+        margin-bottom: 20px;
+    }
+
+    .parameter {
+        background: #f8f9fa;
+        padding: 15px;
+        border-radius: 5px;
+    }
+
+    .parameter-name {
+        font-weight: bold;
+        display: block;
+        margin-bottom: 5px;
+    }
+
+    .parameter-value {
+        font-family: monospace;
+        font-size: 1.1em;
+    }
+</style>
+
+@section Scripts {
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const shapeSelect = document.getElementById('shapeSelect');
+            const orientationGroup = document.getElementById('orientationGroup');
+
+            // Функция для скрытия/показа ориентации
+            function toggleOrientation() {
+                orientationGroup.style.display =
+                    shapeSelect.value === 'sphere' ? 'none' : 'block';
+            }
+
+            // Обрабатываем изменение выбора формы
+            shapeSelect.addEventListener('change', toggleOrientation);
+
+            // Вызываем сразу при загрузке страницы
+            toggleOrientation();
+        });
+    </script>
+}
