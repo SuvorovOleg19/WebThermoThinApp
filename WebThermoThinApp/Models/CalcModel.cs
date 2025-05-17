@@ -1,4 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using WebThermoThinApp.Data;
 
 namespace WebThermoThinApp.Models
 {
@@ -14,6 +16,12 @@ namespace WebThermoThinApp.Models
 
     public class CalcModel
     {
+        private readonly ThermoThinContext _context;
+
+        public CalcModel(ThermoThinContext context)
+        {
+            _context = context;
+        }
         public string Shape { get; set; }
         public string Orientation { get; set; }
         public double Length { get; set; }
@@ -72,6 +80,7 @@ namespace WebThermoThinApp.Models
             return results;
         }
 
+
         public double CalculateSurfaceArea()
         {
             return Shape switch
@@ -97,10 +106,10 @@ namespace WebThermoThinApp.Models
         {
             double characteristicLength = GetCharacteristicLength();
             double grashof = CalculateGrashofNumber(characteristicLength, kinematicViscosity);
-            double prandtl = 0.7; // Для воздуха
+            double prandtl = CalculatePrandtlNumber(EnvTemp); // Для воздуха
 
             double nusselt = CalculateNusseltNumber(grashof, prandtl);
-            double thermalConductivity = 0.026; // Для воздуха, Вт/(м·К)
+            double thermalConductivity = CalculateThermalConductivity(EnvTemp); // Для воздуха, Вт/(м·К)
 
             return nusselt * thermalConductivity / characteristicLength;
         }
@@ -115,7 +124,10 @@ namespace WebThermoThinApp.Models
                 _ => 0
             };
         }
-
+        public Material GetSelectedMaterial()
+        {
+            return _context.Materials.FirstOrDefault(m => m.Name == Material);
+        }
         public double CalculateGrashofNumber(double l, double kinematicViscosity)
         {
             double g = 9.81;
@@ -174,11 +186,20 @@ namespace WebThermoThinApp.Models
 
             if (Shape == "plate")
             {
-                if (rayleigh > 2e4 && rayleigh < 8e6) return 0.54 * Math.Pow(rayleigh, 0.25);
-                if (rayleigh > 8e6 && rayleigh < 1e11) return 0.15 * Math.Pow(rayleigh, 0.33);
+                if (Orientation == "horizontal")
+                {
+                    // Для горизонтальной пластины учитываем разницу между верхней и нижней поверхностью
+                    if (rayleigh > 2e4 && rayleigh < 8e6) return 0.54 * Math.Pow(rayleigh, 0.25);
+                    if (rayleigh > 8e6 && rayleigh < 1e11) return 0.15 * Math.Pow(rayleigh, 0.33);
+                }
+                else // vertical
+                {
+                    if (rayleigh > 1e4 && rayleigh < 1e9) return 0.59 * Math.Pow(rayleigh, 0.25);
+                    if (rayleigh > 1e9) return 0.13 * Math.Pow(rayleigh, 0.33);
+                }
             }
 
-            return 1; // Минимальное значение по умолчанию
+            return 1;
         }
 
         public double CalculateBioNumber(double alphaSum)
@@ -191,14 +212,7 @@ namespace WebThermoThinApp.Models
 
         public double GetMaterialConductivity()
         {
-            return Material switch
-            {
-                "steel" => 50,
-                "aluminum" => 237,
-                "copper" => 401,
-                "glass" => 0.8,
-                _ => 0.5
-            };
+            return GetSelectedMaterial()?.ThermalConductivity ?? 1000;
         }
 
         private double CalculateTemperature(double time, double surfaceArea, double alphaSum)
@@ -226,26 +240,12 @@ namespace WebThermoThinApp.Models
 
         public double GetMaterialDensity()
         {
-            return Material switch
-            {
-                "steel" => 7850,
-                "aluminum" => 2700,
-                "copper" => 8960,
-                "glass" => 2500,
-                _ => 1000
-            };
+            return GetSelectedMaterial()?.Density ?? 1000;
         }
 
         public double GetMaterialHeatCapacity()
         {
-            return Material switch
-            {
-                "steel" => 500,
-                "aluminum" => 900,
-                "copper" => 385,
-                "glass" => 840,
-                _ => 1000
-            };
+            return GetSelectedMaterial()?.HeatCapacity ?? 1000;
         }
     }
 }

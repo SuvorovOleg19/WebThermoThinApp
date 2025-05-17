@@ -62,46 +62,49 @@ namespace WebThermoThinApp.Controllers
         }
 
         [HttpPost]
-        public IActionResult Calc(CalcModel model, string action)
+        public IActionResult Calc(HomeCalcViewModel vm, string action)
         {
-            var result = model.CalcResult();
-
-            var viewModel = new HomeCalcViewModel()
+            // Маппинг входящих данных в модель расчета
+            var model = new CalcModel(_context)
             {
-                Result = result,
-                Shape = model.Shape,
-                Orientation = model.Orientation,
-                Length = model.Length,
-                Width = model.Width,
-                Height = model.Height,
-                Radius = model.Radius,
-                InitialTemp = model.InitialTemp,
-                EnvTemp = model.EnvTemp,
-                Material = model.Material,
-                CoolingTime = model.CoolingTime,
-                Emissivity = model.Emissivity
+                Shape = vm.Shape,
+                Orientation = vm.Orientation,
+                Length = vm.Length ?? 0,
+                Width = vm.Width ?? 0,
+                Height = vm.Height ?? 0,
+                Radius = vm.Radius ?? 0,
+                InitialTemp = vm.InitialTemp ?? 0,
+                EnvTemp = vm.EnvTemp ?? 0,
+                Material = vm.Material,
+                CoolingTime = vm.CoolingTime ?? 0,
+                Emissivity = vm.Emissivity ?? 0
             };
 
+            // Выполняем расчет
+            var results = model.CalcResult();
+            vm.Result = results;
+
+            // При сохранении добавляем вариант в базу
             if (action == "add")
             {
                 _context.Variants.Add(new Variant
                 {
-                    Shape = model.Shape,
-                    Orientation = model.Orientation,
-                    Length = model.Length,
-                    Width = model.Width,
-                    Height = model.Height,
-                    Radius = model.Radius,
-                    InitialTemp = model.InitialTemp,
-                    EnvTemp = model.EnvTemp,
-                    Material = model.Material,
-                    CoolingTime = model.CoolingTime,
-                    Emissivity = model.Emissivity
+                    Shape = vm.Shape,
+                    Orientation = vm.Orientation,
+                    Length = vm.Length ?? 0,
+                    Width = vm.Width ?? 0,
+                    Height = vm.Height ?? 0,
+                    Radius = vm.Radius ?? 0,
+                    InitialTemp = vm.InitialTemp ?? 0,
+                    EnvTemp = vm.EnvTemp ?? 0,
+                    Material = vm.Material,
+                    CoolingTime = vm.CoolingTime ?? 0,
+                    Emissivity = vm.Emissivity ?? 0
                 });
                 _context.SaveChanges();
             }
 
-            return View(viewModel);
+            return View(vm);
         }
 
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
