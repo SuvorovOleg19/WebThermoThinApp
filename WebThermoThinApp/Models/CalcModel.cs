@@ -1,6 +1,7 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
+﻿using System;
+using System.Collections.Generic;
 using WebThermoThinApp.Data;
+
 
 namespace WebThermoThinApp.Models
 {
@@ -30,7 +31,9 @@ namespace WebThermoThinApp.Models
         public double Radius { get; set; }
         public double InitialTemp { get; set; }
         public double EnvTemp { get; set; }
-        public string MaterialName { get; set; }
+        public double MaterialDensity { get; set; }       // Плотность (кг/м³)
+        public double MaterialHeatCapacity { get; set; }  // Теплоемкость (Дж/(кг·K))
+        public double MaterialConductivity { get; set; }  // Теплопроводность (Вт/(м·K))
         public double CoolingTime { get; set; }
         public double Emissivity { get; set; }
 
@@ -69,8 +72,15 @@ namespace WebThermoThinApp.Models
             for (int i = 0; i <= steps; i++)
             {
                 double t = i * timeStep;
-                double temp = CalculateTemperature(t, surfaceArea, alphaSum);
-                results.Add(new CalculationResult { Time = t, Temperature = temp });
+                results.Add(new CalculationResult
+                {
+                    Time = t,
+                    Temperature = CalculateTemperature(t, surfaceArea, alphaSum),
+                    BioNumber = bioNumber,
+                    KinematicViscosity = kinematicViscosity,
+                    PrandtlNumber = prandtl,
+                    ThermalConductivity = thermalCond
+                });
             }
 
             return results;
@@ -119,10 +129,6 @@ namespace WebThermoThinApp.Models
                 "plate" => Orientation == "vertical" ? Height : Math.Max(Length, Width),
                 _ => 0
             };
-        }
-        public Material GetSelectedMaterial()
-        {
-            return _context.Materials.FirstOrDefault(m => m.Name == MaterialName);
         }
         public double CalculateGrashofNumber(double l, double kinematicViscosity)
         {
@@ -200,24 +206,16 @@ namespace WebThermoThinApp.Models
 
         public double CalculateBioNumber(double alphaSum)
         {
-            double characteristicLength = GetCharacteristicLength();
-            double materialConductivity = GetMaterialConductivity();
-
-            return alphaSum * characteristicLength / materialConductivity;
+            return alphaSum * GetCharacteristicLength() / MaterialConductivity;
         }
 
-        public double GetMaterialConductivity()
-        {
-            return GetSelectedMaterial()?.ThermalConductivity ?? 1000;
-        }
 
         private double CalculateTemperature(double time, double surfaceArea, double alphaSum)
         {
             double mass = CalculateMass();
-            double heatCapacity = GetMaterialHeatCapacity();
 
             return EnvTemp + (InitialTemp - EnvTemp) *
-                   Math.Exp(-surfaceArea * alphaSum * time / (mass * heatCapacity));
+                   Math.Exp(-surfaceArea * alphaSum * time / (mass * MaterialHeatCapacity));
         }
 
         public double CalculateMass()
@@ -230,18 +228,7 @@ namespace WebThermoThinApp.Models
                 _ => 0
             };
 
-            double density = GetMaterialDensity();
-            return volume * density;
-        }
-
-        public double GetMaterialDensity()
-        {
-            return GetSelectedMaterial()?.Density ?? 1000;
-        }
-
-        public double GetMaterialHeatCapacity()
-        {
-            return GetSelectedMaterial()?.HeatCapacity ?? 1000;
+            return volume * MaterialDensity;
         }
     }
 }

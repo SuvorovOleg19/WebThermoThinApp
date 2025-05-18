@@ -28,11 +28,20 @@
                 </div>
 
                 <div class="form-group">
-                    <label>Материал:</label>
-                    <select asp-for="Material" asp-items="@(new SelectList(Model.AvailableMaterials, "Name", "Name"))">
-                        <option value="">Выберите материал</option>
-                    </select>
+                    <label>Плотность материала (кг/м³):</label>
+                    <input asp-for="MaterialDensity" class="form-control"/>
                 </div>
+
+                <div class="form-group">
+                    <label>Теплоемкость материала (Дж/(кг·K)):</label>
+                    <input asp-for="MaterialHeatCapacity" class="form-control"/>
+                </div>
+
+                <div class="form-group">
+                    <label>Теплопроводность материала (Вт/(м·K)):</label>
+                    <input asp-for="MaterialConductivity" class="form-control"/>
+                </div>
+
 
                 <div class="form-group">
                     <label>Начальная температура тела (°C):</label>

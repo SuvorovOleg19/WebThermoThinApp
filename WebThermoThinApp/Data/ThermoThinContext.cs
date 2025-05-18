@@ -6,7 +6,6 @@ namespace WebThermoThinApp.Data
     {
         public DbSet<Variant> Variants { get; set; }
         public DbSet<User> Users { get; set; }
-        public DbSet<Material> Materials { get; set; }
 
         public ThermoThinContext(DbContextOptions<ThermoThinContext> options) : base(options)
         {

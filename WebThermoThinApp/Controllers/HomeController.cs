@@ -7,12 +7,10 @@ namespace WebThermoThinApp.Controllers
 {
     public class HomeController : Controller
     {
-        private readonly ILogger<HomeController> _logger;
         private readonly ThermoThinContext _context;
 
         public HomeController(ILogger<HomeController> logger, ThermoThinContext context)
         {
-            _logger = logger;
             _context = context;
         }
 
@@ -38,11 +36,11 @@ namespace WebThermoThinApp.Controllers
         public IActionResult Calc(int? id)
         {
             var viewModel = new HomeCalcViewModel();
-            viewModel.AvailableMaterials = _context.Materials.ToList();
 
             if (id.HasValue)
             {
                 var variant = _context.Variants.FirstOrDefault(x => x.Id == id);
+
                 if (variant != null)
                 {
                     viewModel.Shape = variant.Shape;
@@ -53,7 +51,6 @@ namespace WebThermoThinApp.Controllers
                     viewModel.Radius = variant.Radius;
                     viewModel.InitialTemp = variant.InitialTemp;
                     viewModel.EnvTemp = variant.EnvTemp;
-                    viewModel.Material = variant.Material;
                     viewModel.CoolingTime = variant.CoolingTime;
                     viewModel.Emissivity = variant.Emissivity;
                 }
@@ -76,7 +73,9 @@ namespace WebThermoThinApp.Controllers
                 Radius = model.Radius ?? 0,
                 InitialTemp = model.InitialTemp ?? 0,
                 EnvTemp = model.EnvTemp ?? 0,
-                MaterialName = model.Material,
+                MaterialDensity = model.MaterialDensity,
+                MaterialHeatCapacity = model.MaterialHeatCapacity,
+                MaterialConductivity = model.MaterialConductivity,
                 CoolingTime = model.CoolingTime ?? 0,
                 Emissivity = model.Emissivity ?? 0
             };
@@ -85,8 +84,6 @@ namespace WebThermoThinApp.Controllers
 
             // Выполняем расчет
             model.Result = calcModel.CalcResult();
-            //vm.Result = results;
-            model.AvailableMaterials = _context.Materials.ToList();
 
             // При сохранении добавляем вариант в базу
             if (action == "add")
@@ -101,7 +98,7 @@ namespace WebThermoThinApp.Controllers
                     Radius = model.Radius ?? 0,
                     InitialTemp = model.InitialTemp ?? 0,
                     EnvTemp = model.EnvTemp ?? 0,
-                    Material = model.Material,
+                    Material = "Custom", // Или можно сохранять как JSON
                     CoolingTime = model.CoolingTime ?? 0,
                     Emissivity = model.Emissivity ?? 0
                 });

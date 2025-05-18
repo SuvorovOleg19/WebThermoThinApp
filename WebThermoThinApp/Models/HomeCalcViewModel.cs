@@ -14,8 +14,9 @@ namespace WebThermoThinApp.Models
         public double? Radius { get; set; }
         public double? InitialTemp { get; set; }
         public double? EnvTemp { get; set; }
-        public string Material { get; set; }
-        public List<Material> AvailableMaterials { get; set; }
+        public double MaterialDensity { get; set; }
+        public double MaterialHeatCapacity { get; set; }
+        public double MaterialConductivity { get; set; }
         public double? CoolingTime { get; set; }
         public double? Emissivity { get; set; }
     }
