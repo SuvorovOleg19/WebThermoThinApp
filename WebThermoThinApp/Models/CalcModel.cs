@@ -62,19 +62,15 @@ namespace WebThermoThinApp.Models
                 throw new InvalidOperationException("Тело не является термически тонким (Bi ≥ 0.1)");
             }
 
+            int steps = 10; // Фиксируем количество шагов (вместо деления времени)
+            double timeStep = CoolingTime / steps;
+
             // 6. Расчёт изменения температуры
-            for (double t = 0; t <= CoolingTime; t += CoolingTime / 10)
+            for (int i = 0; i <= steps; i++)
             {
+                double t = i * timeStep;
                 double temp = CalculateTemperature(t, surfaceArea, alphaSum);
-                results.Add(new CalculationResult
-                {
-                    Time = t,
-                    Temperature = temp,
-                    BioNumber = bioNumber,
-                    KinematicViscosity = kinematicViscosity,
-                    PrandtlNumber = prandtl,
-                    ThermalConductivity = thermalCond
-                });
+                results.Add(new CalculationResult { Time = t, Temperature = temp });
             }
 
             return results;
