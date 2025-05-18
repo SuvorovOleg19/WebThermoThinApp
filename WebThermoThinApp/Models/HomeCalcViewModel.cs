@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using WebThermoThinApp.Data;
 
 namespace WebThermoThinApp.Models
 {
@@ -14,6 +15,7 @@ namespace WebThermoThinApp.Models
         public double? InitialTemp { get; set; }
         public double? EnvTemp { get; set; }
         public string Material { get; set; }
+        public List<Material> AvailableMaterials { get; set; }
         public double? CoolingTime { get; set; }
         public double? Emissivity { get; set; }
     }

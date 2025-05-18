@@ -29,11 +29,8 @@
 
                 <div class="form-group">
                     <label>Материал:</label>
-                    <select asp-for="Material" class="form-control">
-                        <option value="steel">Сталь</option>
-                        <option value="aluminum">Алюминий</option>
-                        <option value="copper">Медь</option>
-                        <option value="glass">Стекло</option>
+                    <select asp-for="Material" asp-items="@(new SelectList(Model.AvailableMaterials, "Name", "Name"))">
+                        <option value="">Выберите материал</option>
                     </select>
                 </div>
 

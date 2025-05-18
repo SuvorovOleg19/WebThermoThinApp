@@ -1,7 +1,7 @@
 using System.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
-using WebThermoThinApp.Models;
 using WebThermoThinApp.Data;
+using WebThermoThinApp.Models;
 
 namespace WebThermoThinApp.Controllers
 {
@@ -38,6 +38,7 @@ namespace WebThermoThinApp.Controllers
         public IActionResult Calc(int? id)
         {
             var viewModel = new HomeCalcViewModel();
+            viewModel.AvailableMaterials = _context.Materials.ToList();
 
             if (id.HasValue)
             {
@@ -62,49 +63,52 @@ namespace WebThermoThinApp.Controllers
         }
 
         [HttpPost]
-        public IActionResult Calc(HomeCalcViewModel vm, string action)
+        public IActionResult Calc(HomeCalcViewModel model, string action)
         {
             // Маппинг входящих данных в модель расчета
-            var model = new CalcModel(_context)
+            var calcModel = new CalcModel(_context)
             {
-                Shape = vm.Shape,
-                Orientation = vm.Orientation,
-                Length = vm.Length ?? 0,
-                Width = vm.Width ?? 0,
-                Height = vm.Height ?? 0,
-                Radius = vm.Radius ?? 0,
-                InitialTemp = vm.InitialTemp ?? 0,
-                EnvTemp = vm.EnvTemp ?? 0,
-                Material = vm.Material,
-                CoolingTime = vm.CoolingTime ?? 0,
-                Emissivity = vm.Emissivity ?? 0
+                Shape = model.Shape,
+                Orientation = model.Orientation,
+                Length = model.Length ?? 0,
+                Width = model.Width ?? 0,
+                Height = model.Height ?? 0,
+                Radius = model.Radius ?? 0,
+                InitialTemp = model.InitialTemp ?? 0,
+                EnvTemp = model.EnvTemp ?? 0,
+                MaterialName = model.Material,
+                CoolingTime = model.CoolingTime ?? 0,
+                Emissivity = model.Emissivity ?? 0
             };
 
+            model.Result = calcModel.CalcResult();
+
             // Выполняем расчет
-            var results = model.CalcResult();
-            vm.Result = results;
+            model.Result = calcModel.CalcResult();
+            //vm.Result = results;
+            model.AvailableMaterials = _context.Materials.ToList();
 
             // При сохранении добавляем вариант в базу
             if (action == "add")
             {
                 _context.Variants.Add(new Variant
                 {
-                    Shape = vm.Shape,
-                    Orientation = vm.Orientation,
-                    Length = vm.Length ?? 0,
-                    Width = vm.Width ?? 0,
-                    Height = vm.Height ?? 0,
-                    Radius = vm.Radius ?? 0,
-                    InitialTemp = vm.InitialTemp ?? 0,
-                    EnvTemp = vm.EnvTemp ?? 0,
-                    Material = vm.Material,
-                    CoolingTime = vm.CoolingTime ?? 0,
-                    Emissivity = vm.Emissivity ?? 0
+                    Shape = model.Shape,
+                    Orientation = model.Orientation,
+                    Length = model.Length ?? 0,
+                    Width = model.Width ?? 0,
+                    Height = model.Height ?? 0,
+                    Radius = model.Radius ?? 0,
+                    InitialTemp = model.InitialTemp ?? 0,
+                    EnvTemp = model.EnvTemp ?? 0,
+                    Material = model.Material,
+                    CoolingTime = model.CoolingTime ?? 0,
+                    Emissivity = model.Emissivity ?? 0
                 });
                 _context.SaveChanges();
             }
 
-            return View(vm);
+            return View(model);
         }
 
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
