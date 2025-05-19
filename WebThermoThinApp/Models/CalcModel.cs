@@ -206,7 +206,11 @@ namespace WebThermoThinApp.Models
 
         public double CalculateBioNumber(double alphaSum)
         {
-            return alphaSum * GetCharacteristicLength() / MaterialConductivity;
+            if (MaterialConductivity <= 0)
+                throw new ArgumentException("Теплопроводность должна быть положительной");
+
+            double characteristicLength = GetCharacteristicLength();
+            return alphaSum * characteristicLength / MaterialConductivity;
         }
 
 

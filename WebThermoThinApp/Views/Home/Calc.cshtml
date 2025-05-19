@@ -2,6 +2,7 @@
 @{
     ViewData["Title"] = "Расчёт охлаждения термически тонких тел";
 }
+@Html.ValidationSummary(true, "", new { @class = "text-danger" })
 
 <div class="container">
     <h2>@ViewData["Title"]</h2>
@@ -28,74 +29,71 @@
 
                 <div class="form-group">
                     <label>Плотность материала (кг/м³):</label>
-                    <input asp-for="MaterialDensity" class="form-control"/>
+                    <input asp-for="MaterialDensity" class="form-control" type="number" step="any" />
+                    <span asp-validation-for="MaterialDensity" class="text-danger"></span>
                 </div>
 
                 <div class="form-group">
                     <label>Теплоемкость материала (Дж/(кг·K)):</label>
-                    <input asp-for="MaterialHeatCapacity" class="form-control"/>
+                    <input asp-for="MaterialHeatCapacity" class="form-control" type="number" step="any" />
+                    <span asp-validation-for="MaterialHeatCapacity" class="text-danger"></span>
                 </div>
 
                 <div class="form-group">
                     <label>Теплопроводность материала (Вт/(м·K)):</label>
-                    <input asp-for="MaterialConductivity" class="form-control"/>
+                    <input asp-for="MaterialConductivity" class="form-control" />
+                    <span asp-validation-for="MaterialConductivity" class="text-danger"></span>
                 </div>
-
 
                 <div class="form-group">
                     <label>Начальная температура тела (°C):</label>
-                    <input asp-for="InitialTemp" class="form-control" />
+                    <input asp-for="InitialTemp" class="form-control" type="number" step="any" />
+                    <span asp-validation-for="InitialTemp" class="text-danger"></span>
                 </div>
 
                 <div class="form-group">
                     <label>Температура среды (°C):</label>
-                    <input asp-for="EnvTemp" class="form-control" />
+                    <input asp-for="EnvTemp" class="form-control" type="number" step="any" />
+                    <span asp-validation-for="EnvTemp" class="text-danger"></span>
                 </div>
             </div>
 
             <div class="col-md-6">
                 <div class="form-group">
                     <label>Время охлаждения (с):</label>
-                    <input asp-for="CoolingTime" class="form-control" />
+                    <input asp-for="CoolingTime" class="form-control" type="number" step="any" />
+                    <span asp-validation-for="CoolingTime" class="text-danger"></span>
                 </div>
 
                 <div class="form-group">
                     <label>Коэффициент излучения:</label>
-                    <input asp-for="Emissivity" class="form-control" />
+                    <input asp-for="Emissivity" class="form-control" type="number" step="any" />
+                    <span asp-validation-for="Emissivity" class="text-danger"></span>
                 </div>
 
-                <!-- Динамические поля в зависимости от формы -->
-                <div id="cylinderFields" class="shape-fields">
-                    <div class="form-group">
-                        <label>Радиус (м):</label>
-                        <input asp-for="Radius" class="form-control" />
-                    </div>
-                    <div class="form-group">
-                        <label>Высота (м):</label>
-                        <input asp-for="Height" class="form-control" />
-                    </div>
+                <!-- Общие поля, скрываются/показываются через JS -->
+                <div class="form-group shape-field" data-shape="cylinder sphere">
+                    <label>Радиус (м):</label>
+                    <input asp-for="Radius" class="form-control" type="number" step="any" />
+                    <span asp-validation-for="Radius" class="text-danger"></span>
                 </div>
 
-                <div id="sphereFields" class="shape-fields" style="display:none;">
-                    <div class="form-group">
-                        <label>Радиус (м):</label>
-                        <input asp-for="Radius" class="form-control" />
-                    </div>
+                <div class="form-group shape-field" data-shape="cylinder plate">
+                    <label>Высота / Толщина (м):</label>
+                    <input asp-for="Height" class="form-control" type="number" step="any" />
+                    <span asp-validation-for="Height" class="text-danger"></span>
                 </div>
 
-                <div id="plateFields" class="shape-fields" style="display:none;">
-                    <div class="form-group">
-                        <label>Длина (м):</label>
-                        <input asp-for="Length" class="form-control" />
-                    </div>
-                    <div class="form-group">
-                        <label>Ширина (м):</label>
-                        <input asp-for="Width" class="form-control" />
-                    </div>
-                    <div class="form-group">
-                        <label>Толщина (м):</label>
-                        <input asp-for="Height" class="form-control" />
-                    </div>
+                <div class="form-group shape-field" data-shape="plate">
+                    <label>Длина (м):</label>
+                    <input asp-for="Length" class="form-control" type="number" step="any" />
+                    <span asp-validation-for="Length" class="text-danger"></span>
+                </div>
+
+                <div class="form-group shape-field" data-shape="plate">
+                    <label>Ширина (м):</label>
+                    <input asp-for="Width" class="form-control" type="number" step="any" />
+                    <span asp-validation-for="Width" class="text-danger"></span>
                 </div>
             </div>
         </div>
@@ -110,18 +108,15 @@
     {
         <div class="mt-4">
             <h3>Параметры среды:</h3>
-
             <div class="parameters-grid">
                 <div class="parameter">
                     <span class="parameter-name">Кинематическая вязкость (ν):</span>
                     <span class="parameter-value">@Model.Result.First().KinematicViscosity.ToString("E4") м²/с</span>
                 </div>
-
                 <div class="parameter">
                     <span class="parameter-name">Число Прандтля (Pr):</span>
                     <span class="parameter-value">@Model.Result.First().PrandtlNumber.ToString("F4")</span>
                 </div>
-
                 <div class="parameter">
                     <span class="parameter-name">Теплопроводность (λ):</span>
                     <span class="parameter-value">@Model.Result.First().ThermalConductivity.ToString("E4") Вт/(м·K)</span>
@@ -129,7 +124,6 @@
             </div>
 
             <h3>Результаты:</h3>
-
             <div class="alert alert-info">
                 Число Био: @Model.Result.First().BioNumber.ToString("F4")
                 @if (Model.Result.First().BioNumber >= 0.1)
@@ -168,93 +162,68 @@
 </div>
 
 @section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
     <script>
         document.addEventListener('DOMContentLoaded', function () {
             const shapeSelect = document.getElementById('shapeSelect');
             const orientationGroup = document.getElementById('orientationGroup');
-            const cylinderFields = document.getElementById('cylinderFields');
-            const sphereFields = document.getElementById('sphereFields');
-            const plateFields = document.getElementById('plateFields');
+            const shapeFields = document.querySelectorAll('.shape-field');
 
             function updateFields() {
                 const shape = shapeSelect.value;
-                cylinderFields.style.display = 'none';
-                sphereFields.style.display = 'none';
-                plateFields.style.display = 'none';
+                orientationGroup.style.display = (shape === 'sphere') ? 'none' : 'block';
 
-                if (shape === 'cylinder') {
-                    cylinderFields.style.display = 'block';
-                    orientationGroup.style.display = 'block';
-                }
-                else if (shape === 'sphere') {
-                    sphereFields.style.display = 'block';
-                    orientationGroup.style.display = 'none';
-                }
-                else if (shape === 'plate') {
-                    plateFields.style.display = 'block';
-                    orientationGroup.style.display = 'block';
-                }
+                shapeFields.forEach(field => {
+                    const shapes = field.dataset.shape.split(" ");
+                    field.style.display = shapes.includes(shape) ? 'block' : 'none';
+                });
             }
 
             shapeSelect.addEventListener('change', updateFields);
             updateFields();
 
-            // Построение графика, если есть данные
-        const tempChartElement = document.getElementById('tempChart');
-        if (tempChartElement) {
-            const times = @Html.Raw(Json.Serialize(Model.Result?.Select(r => r.Time) ?? new List<double>()));
-            const temps = @Html.Raw(Json.Serialize(Model.Result?.Select(r => r.Temperature) ?? new List<double>()));
+            // График
+            const tempChartElement = document.getElementById('tempChart');
+            if (tempChartElement) {
+                const times = @Html.Raw(Json.Serialize(Model.Result?.Select(r => r.Time) ?? new List<double>()));
+                const temps = @Html.Raw(Json.Serialize(Model.Result?.Select(r => r.Temperature) ?? new List<double>()));
 
-            if (times.length > 0 && temps.length > 0) {
-                const ctx = tempChartElement.getContext('2d');
-                new Chart(ctx, {
-                    type: 'line',
-                    data: {
-                        labels: times,
-                        datasets: [{
-                            label: 'Температура (°C)',
-                            data: temps,
-                            borderColor: 'rgba(75, 192, 192, 1)',
-                            backgroundColor: 'rgba(0, 0, 0, 0)', // прозрачный фон
-                            borderWidth: 2,
-                            fill: false,                       // <== отключает заливку
-                            tension: 0.3,
-                            pointRadius: 4,                    // <== показывает точки
-                            pointBackgroundColor: 'rgba(75, 192, 192, 1)'
-                        }]
-                    },
-                    options: {
-                        scales: {
-                            x: {
-                                title: {
-                                    display: true,
-                                    text: 'Время (с)'
-                                }
-                            },
-                            y: {
-                                title: {
-                                    display: true,
-                                    text: 'Температура (°C)'
-                                }
-                            }
+                if (times.length > 0 && temps.length > 0) {
+                    const ctx = tempChartElement.getContext('2d');
+                    new Chart(ctx, {
+                        type: 'line',
+                        data: {
+                            labels: times,
+                            datasets: [{
+                                label: 'Температура (°C)',
+                                data: temps,
+                                borderColor: 'rgba(75, 192, 192, 1)',
+                                backgroundColor: 'rgba(0, 0, 0, 0)',
+                                borderWidth: 2,
+                                tension: 0.3,
+                                pointRadius: 4,
+                                pointBackgroundColor: 'rgba(75, 192, 192, 1)'
+                            }]
                         },
-                        responsive: true,
-                        plugins: {
-                            legend: {
-                                display: true,
-                                position: 'top'
+                        options: {
+                            scales: {
+                                x: { title: { display: true, text: 'Время (с)' } },
+                                y: { title: { display: true, text: 'Температура (°C)' } }
+                            },
+                            responsive: true,
+                            plugins: {
+                                legend: { display: true, position: 'top' }
                             }
                         }
-                    }
-                });
+                    });
+                }
             }
-        }
-    });
-</script>
+        });
+    </script>
 }
-
 
 <style>
     .parameters-grid {

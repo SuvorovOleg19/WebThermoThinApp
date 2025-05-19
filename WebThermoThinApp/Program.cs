@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.EntityFrameworkCore;
 using WebThermoThinApp.Data;
+using System.Globalization;
 
 namespace WebThermoThinApp
 {
@@ -9,6 +10,9 @@ namespace WebThermoThinApp
         public static void Main(string[] args)
         {
             var builder = WebApplication.CreateBuilder(args);
+
+            CultureInfo.DefaultThreadCurrentCulture = new CultureInfo("ru-RU");
+            CultureInfo.DefaultThreadCurrentUICulture = new CultureInfo("ru-RU");
 
             // Add services to the container.
             builder.Services.AddControllersWithViews()

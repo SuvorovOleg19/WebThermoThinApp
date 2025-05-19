@@ -1,4 +1,4 @@
-using System.Diagnostics;
+﻿using System.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
 using WebThermoThinApp.Data;
 using WebThermoThinApp.Models;
@@ -62,12 +62,44 @@ namespace WebThermoThinApp.Controllers
         [HttpPost]
         public IActionResult Calc(HomeCalcViewModel model, string action)
         {
-            // ��� ���� ���������� ����������
-            if (model.Shape == "sphere")
+            // Сначала базовая проверка по атрибутам
+            if (!ModelState.IsValid)
             {
-                model.Orientation = null;
+                return View(model);
             }
-            // ������� �������� ������ � ������ �������
+
+            // Дополнительная ручная валидация по выбранной форме
+            if (model.Shape == "cylinder")
+            {
+                if (model.Radius == null || model.Radius <= 0)
+                    ModelState.AddModelError("Radius", "Радиус обязателен и должен быть больше 0.");
+
+                if (model.Height == null || model.Height <= 0)
+                    ModelState.AddModelError("Height", "Высота обязательна и должна быть больше 0.");
+            }
+            else if (model.Shape == "sphere")
+            {
+                if (model.Radius == null || model.Radius <= 0)
+                    ModelState.AddModelError("Radius", "Радиус обязателен и должен быть больше 0.");
+            }
+            else if (model.Shape == "plate")
+            {
+                if (model.Length == null || model.Length <= 0)
+                    ModelState.AddModelError("Length", "Длина обязательна и должна быть больше 0.");
+
+                if (model.Width == null || model.Width <= 0)
+                    ModelState.AddModelError("Width", "Ширина обязательна и должна быть больше 0.");
+
+                if (model.Height == null || model.Height <= 0)
+                    ModelState.AddModelError("Height", "Толщина обязательна и должна быть больше 0.");
+            }
+
+            if (!ModelState.IsValid)
+            {
+                return View(model); // покажет ошибки на форме
+            }
+
+            // Подготовка расчётной модели
             var calcModel = new CalcModel(_context)
             {
                 Shape = model.Shape,
@@ -85,33 +117,40 @@ namespace WebThermoThinApp.Controllers
                 Emissivity = model.Emissivity ?? 0
             };
 
-            model.Result = calcModel.CalcResult();
-
-            // ��������� ������
-            model.Result = calcModel.CalcResult();
-
-            // ��� ���������� ��������� ������� � ����
-            if (action == "add")
+            try
             {
-                _context.Variants.Add(new Variant
+                model.Result = calcModel.CalcResult(); // запускаем расчёт
+
+                if (action == "add")
                 {
-                    Shape = model.Shape,
-                    Orientation = model.Orientation,
-                    Length = model.Length ?? 0,
-                    Width = model.Width ?? 0,
-                    Height = model.Height ?? 0,
-                    Radius = model.Radius ?? 0,
-                    InitialTemp = model.InitialTemp ?? 0,
-                    EnvTemp = model.EnvTemp ?? 0,
-                    Material = "Custom", // ��� ����� ��������� ��� JSON
-                    CoolingTime = model.CoolingTime ?? 0,
-                    Emissivity = model.Emissivity ?? 0
-                });
-                _context.SaveChanges();
+                    _context.Variants.Add(new Variant
+                    {
+                        Shape = model.Shape,
+                        Orientation = model.Orientation,
+                        Length = model.Length ?? 0,
+                        Width = model.Width ?? 0,
+                        Height = model.Height ?? 0,
+                        Radius = model.Radius ?? 0,
+                        InitialTemp = model.InitialTemp ?? 0,
+                        EnvTemp = model.EnvTemp ?? 0,
+                        Material = "Custom",
+                        CoolingTime = model.CoolingTime ?? 0,
+                        Emissivity = model.Emissivity ?? 0
+                    });
+
+                    _context.SaveChanges();
+                }
+            }
+            catch (InvalidOperationException ex)
+            {
+                // Например, если Bi ≥ 0.1
+                ModelState.AddModelError("", ex.Message);
+                return View(model);
             }
 
             return View(model);
         }
+
 
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
         public IActionResult Error()
