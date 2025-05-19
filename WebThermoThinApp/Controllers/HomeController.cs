@@ -62,6 +62,11 @@ namespace WebThermoThinApp.Controllers
         [HttpPost]
         public IActionResult Calc(HomeCalcViewModel model, string action)
         {
+            // Для шара сбрасываем ориентацию
+            if (model.Shape == "sphere")
+            {
+                model.Orientation = null;
+            }
             // Маппинг входящих данных в модель расчета
             var calcModel = new CalcModel(_context)
             {

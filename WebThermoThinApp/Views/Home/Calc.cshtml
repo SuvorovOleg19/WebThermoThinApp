@@ -11,20 +11,19 @@
             <div class="col-md-6">
                 <div class="form-group">
                     <label>Форма тела:</label>
-                    <select asp-for="Shape" class="form-control">
+                    <select asp-for="Shape" id="shapeSelect" class="form-control">
                         <option value="cylinder">Цилиндр</option>
                         <option value="sphere">Шар</option>
                         <option value="plate">Пластина</option>
                     </select>
                 </div>
 
-                <div id="OrientationGroup" class="form-group">
-                    <label asp-for="Orientation" class="control-label"></label>
+                <div class="form-group" id="orientationGroup">
+                    <label>Ориентация:</label>
                     <select asp-for="Orientation" class="form-control">
                         <option value="vertical">Вертикальная</option>
                         <option value="horizontal">Горизонтальная</option>
                     </select>
-                    <span asp-validation-for="Orientation" class="text-danger"></span>
                 </div>
 
                 <div class="form-group">
@@ -66,7 +65,7 @@
                 </div>
 
                 <!-- Динамические поля в зависимости от формы -->
-                <div id="cylinder-fields" class="shape-fields">
+                <div id="cylinderFields" class="shape-fields">
                     <div class="form-group">
                         <label>Радиус (м):</label>
                         <input asp-for="Radius" class="form-control" />
@@ -77,14 +76,14 @@
                     </div>
                 </div>
 
-                <div id="sphere-fields" class="shape-fields" style="display:none;">
+                <div id="sphereFields" class="shape-fields" style="display:none;">
                     <div class="form-group">
                         <label>Радиус (м):</label>
                         <input asp-for="Radius" class="form-control" />
                     </div>
                 </div>
 
-                <div id="plate-fields" class="shape-fields" style="display:none;">
+                <div id="plateFields" class="shape-fields" style="display:none;">
                     <div class="form-group">
                         <label>Длина (м):</label>
                         <input asp-for="Length" class="form-control" />
@@ -165,51 +164,52 @@
                 <canvas id="tempChart"></canvas>
             </div>
         </div>
-
-        <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-        <script>
-            const ctx = document.getElementById('tempChart').getContext('2d');
-            const chart = new Chart(ctx, {
-                type: 'line',
-                data: {
-                    labels: @Html.Raw(Json.Serialize(Model.Result.Select(r => r.Time.ToString("F1")))),
-                    datasets: [{
-                        label: 'Температура тела (°C)',
-                        data: @Html.Raw(Json.Serialize(Model.Result.Select(r => r.Temperature))),
-                        borderColor: 'rgb(75, 192, 192)',
-                        tension: 0.1
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    scales: {
-                        x: {
-                            title: {
-                                display: true,
-                                text: 'Время (с)'
-                            }
-                        },
-                        y: {
-                            title: {
-                                display: true,
-                                text: 'Температура (°C)'
-                            }
-                        }
-                    }
-                }
-            });
-
-            // Показываем/скрываем поля в зависимости от выбранной формы
-            document.getElementById('Shape').addEventListener('change', function() {
-                document.querySelectorAll('.shape-fields').forEach(el => el.style.display = 'none');
-                document.getElementById(this.value + '-fields').style.display = 'block';
-            });
-
-            // Инициализация при загрузке
-            document.getElementById('Shape').dispatchEvent(new Event('change'));
-        </script>
     }
 </div>
+
+@section Scripts {
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const shapeSelect = document.getElementById('shapeSelect');
+            const orientationGroup = document.getElementById('orientationGroup');
+
+            // Поля для разных фигур
+            const cylinderFields = document.getElementById('cylinderFields');
+            const sphereFields = document.getElementById('sphereFields');
+            const plateFields = document.getElementById('plateFields');
+
+            // Функция обновления видимости полей
+            function updateFields() {
+                const shape = shapeSelect.value;
+
+                // Скрываем все поля
+                cylinderFields.style.display = 'none';
+                sphereFields.style.display = 'none';
+                plateFields.style.display = 'none';
+
+                // Показываем нужные поля
+                if (shape === 'cylinder') {
+                    cylinderFields.style.display = 'block';
+                    orientationGroup.style.display = 'block';
+                }
+                else if (shape === 'sphere') {
+                    sphereFields.style.display = 'block';
+                    orientationGroup.style.display = 'none';
+                }
+                else if (shape === 'plate') {
+                    plateFields.style.display = 'block';
+                    orientationGroup.style.display = 'block';
+                }
+            }
+
+            // Обработчик изменения выбора формы
+            shapeSelect.addEventListener('change', updateFields);
+
+            // Инициализация при загрузке
+            updateFields();
+        });
+    </script>
+}
 
 <style>
     .parameters-grid {
@@ -237,7 +237,7 @@
     }
 </style>
 
-@section Scripts {
+@* @section Scripts {
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             const shapeSelect = document.getElementById('shapeSelect');
@@ -256,4 +256,4 @@
             toggleOrientation();
         });
     </script>
-}
+} *@
