@@ -168,26 +168,22 @@
 </div>
 
 @section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
+        document.addEventListener('DOMContentLoaded', function () {
             const shapeSelect = document.getElementById('shapeSelect');
             const orientationGroup = document.getElementById('orientationGroup');
-
-            // Поля для разных фигур
             const cylinderFields = document.getElementById('cylinderFields');
             const sphereFields = document.getElementById('sphereFields');
             const plateFields = document.getElementById('plateFields');
 
-            // Функция обновления видимости полей
             function updateFields() {
                 const shape = shapeSelect.value;
-
-                // Скрываем все поля
                 cylinderFields.style.display = 'none';
                 sphereFields.style.display = 'none';
                 plateFields.style.display = 'none';
 
-                // Показываем нужные поля
                 if (shape === 'cylinder') {
                     cylinderFields.style.display = 'block';
                     orientationGroup.style.display = 'block';
@@ -202,14 +198,63 @@
                 }
             }
 
-            // Обработчик изменения выбора формы
             shapeSelect.addEventListener('change', updateFields);
-
-            // Инициализация при загрузке
             updateFields();
-        });
-    </script>
+
+            // Построение графика, если есть данные
+        const tempChartElement = document.getElementById('tempChart');
+        if (tempChartElement) {
+            const times = @Html.Raw(Json.Serialize(Model.Result?.Select(r => r.Time) ?? new List<double>()));
+            const temps = @Html.Raw(Json.Serialize(Model.Result?.Select(r => r.Temperature) ?? new List<double>()));
+
+            if (times.length > 0 && temps.length > 0) {
+                const ctx = tempChartElement.getContext('2d');
+                new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: times,
+                        datasets: [{
+                            label: 'Температура (°C)',
+                            data: temps,
+                            borderColor: 'rgba(75, 192, 192, 1)',
+                            backgroundColor: 'rgba(0, 0, 0, 0)', // прозрачный фон
+                            borderWidth: 2,
+                            fill: false,                       // <== отключает заливку
+                            tension: 0.3,
+                            pointRadius: 4,                    // <== показывает точки
+                            pointBackgroundColor: 'rgba(75, 192, 192, 1)'
+                        }]
+                    },
+                    options: {
+                        scales: {
+                            x: {
+                                title: {
+                                    display: true,
+                                    text: 'Время (с)'
+                                }
+                            },
+                            y: {
+                                title: {
+                                    display: true,
+                                    text: 'Температура (°C)'
+                                }
+                            }
+                        },
+                        responsive: true,
+                        plugins: {
+                            legend: {
+                                display: true,
+                                position: 'top'
+                            }
+                        }
+                    }
+                });
+            }
+        }
+    });
+</script>
 }
+
 
 <style>
     .parameters-grid {
@@ -236,24 +281,3 @@
         font-size: 1.1em;
     }
 </style>
-
-@* @section Scripts {
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const shapeSelect = document.getElementById('shapeSelect');
-            const orientationGroup = document.getElementById('orientationGroup');
-
-            // Функция для скрытия/показа ориентации
-            function toggleOrientation() {
-                orientationGroup.style.display =
-                    shapeSelect.value === 'sphere' ? 'none' : 'block';
-            }
-
-            // Обрабатываем изменение выбора формы
-            shapeSelect.addEventListener('change', toggleOrientation);
-
-            // Вызываем сразу при загрузке страницы
-            toggleOrientation();
-        });
-    </script>
-} *@
