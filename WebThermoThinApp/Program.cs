@@ -24,10 +24,10 @@ namespace WebThermoThinApp
 
             builder.Services.AddDbContext<ThermoThinContext>(o => o.UseSqlite("Data Source=ThermoThin.db;"));
 
-            builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
-                .AddCookie(options => options.LoginPath = "/auth");
+            //builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
+            //    .AddCookie(options => options.LoginPath = "/auth");
 
-            builder.Services.AddAuthorization();
+            //builder.Services.AddAuthorization();
 
             var app = builder.Build();
 
@@ -40,8 +40,8 @@ namespace WebThermoThinApp
 
             app.UseRouting();
 
-            app.UseAuthentication();
-            app.UseAuthorization();
+            //app.UseAuthentication();
+            //app.UseAuthorization();
 
             app.MapControllerRoute(
                 name: "default",
