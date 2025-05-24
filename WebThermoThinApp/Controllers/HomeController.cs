@@ -98,6 +98,14 @@ namespace WebThermoThinApp.Controllers
             {
                 return View(model); // покажет ошибки на форме
             }
+            // Устанавливаем свойства материала, если выбран не "custom"
+            if (model.MaterialType != "custom")
+            {
+                var material = model.AvailableMaterials[model.MaterialType];
+                model.MaterialDensity = material.Density;
+                model.MaterialHeatCapacity = material.HeatCapacity;
+                model.MaterialConductivity = material.Conductivity;
+            }
 
             // Подготовка расчётной модели
             var calcModel = new CalcModel(_context)
@@ -110,6 +118,7 @@ namespace WebThermoThinApp.Controllers
                 Radius = model.Radius ?? 0,
                 InitialTemp = model.InitialTemp ?? 0,
                 EnvTemp = model.EnvTemp ?? 0,
+                MaterialType = model.MaterialType,
                 MaterialDensity = model.MaterialDensity,
                 MaterialHeatCapacity = model.MaterialHeatCapacity,
                 MaterialConductivity = model.MaterialConductivity,

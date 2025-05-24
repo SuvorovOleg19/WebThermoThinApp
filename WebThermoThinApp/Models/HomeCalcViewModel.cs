@@ -29,6 +29,20 @@ namespace WebThermoThinApp.Models
         [Required(ErrorMessage = "Введите температуру среды")]
         public double? EnvTemp { get; set; }
 
+        [Required(ErrorMessage = "Выберите материал или введите свойства")]
+        public string MaterialType { get; set; } = "custom";
+
+        public Dictionary<string, Material> AvailableMaterials { get; } = new()
+        {
+            {"aluminium", new Material("Алюминий", 2700, 900, 237)},
+            {"iron", new Material("Железо", 7870, 450, 80.2)},
+            {"copper", new Material("Медь", 8960, 385, 401)},
+            {"low_carbon_steel", new Material("Мал. углер. сталь", 7850, 502, 54)},
+            {"medium_carbon_steel", new Material("Ср. углер. сталь", 7850, 486, 51)},
+            {"high_carbon_steel", new Material("Выс. углер. сталь", 7850, 469, 48)},
+            {"custom", new Material("Свой материал", 0, 0, 0)}
+        };
+
         [Range(1, double.MaxValue, ErrorMessage = "Плотность должна быть положительной")]
         public double MaterialDensity { get; set; }
 
@@ -44,5 +58,21 @@ namespace WebThermoThinApp.Models
         [Required(ErrorMessage = "Введите коэффициент излучения")]
         [Range(0.0, 1.0, ErrorMessage = "Коэффициент излучения должен быть от 0 до 1")]
         public double? Emissivity { get; set; }
+
+    }
+    public class Material
+    {
+        public string Name { get; }
+        public double Density { get; }
+        public double HeatCapacity { get; }
+        public double Conductivity { get; }
+
+        public Material(string name, double density, double heatCapacity, double conductivity)
+        {
+            Name = name;
+            Density = density;
+            HeatCapacity = heatCapacity;
+            Conductivity = conductivity;
+        }
     }
 }
