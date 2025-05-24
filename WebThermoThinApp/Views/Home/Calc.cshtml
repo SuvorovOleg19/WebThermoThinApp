@@ -29,44 +29,50 @@
 
                 <div class="form-group">
                     <label>Материал:</label>
-                    <select asp-for="MaterialType" id="materialSelect" class="form-control" onchange="updateMaterialFields()">
+                    <select asp-for="MaterialType" id="materialSelect" class="form-control"
+                            onchange="toggleCustomMaterialFields()">
                         @foreach (var material in Model.AvailableMaterials)
                         {
                             <option value="@material.Key">@material.Value.Name</option>
                         }
                     </select>
                 </div>
-
-                <div id="customMaterialFields" style="display: none;">
+                <div id="customMaterialFields" style="@(Model.MaterialType == "custom" ? "display:block" : "display:none")">
                     <div class="form-group">
                         <label asp-for="MaterialDensity"></label>
-                        <input asp-for="MaterialDensity" class="form-control" />
+                        <input asp-for="MaterialDensity" class="form-control"
+                               disabled="@(Model.MaterialType != "custom")" />
                         <span asp-validation-for="MaterialDensity" class="text-danger"></span>
                     </div>
+
                     <div class="form-group">
                         <label asp-for="MaterialHeatCapacity"></label>
-                        <input asp-for="MaterialHeatCapacity" class="form-control" />
+                        <input asp-for="MaterialHeatCapacity" class="form-control"
+                               disabled="@(Model.MaterialType != "custom")" />
                         <span asp-validation-for="MaterialHeatCapacity" class="text-danger"></span>
                     </div>
+
                     <div class="form-group">
                         <label asp-for="MaterialConductivity"></label>
-                        <input asp-for="MaterialConductivity" class="form-control" />
+                        <input asp-for="MaterialConductivity" class="form-control"
+                               disabled="@(Model.MaterialType != "custom")" />
                         <span asp-validation-for="MaterialConductivity" class="text-danger"></span>
                     </div>
                 </div>
-
                 <script>
-                    function updateMaterialFields() {
+                    function toggleCustomMaterialFields() {
                         const materialType = document.getElementById('materialSelect').value;
                         const customFields = document.getElementById('customMaterialFields');
+                        const inputs = customFields.querySelectorAll('input');
 
                         if (materialType === 'custom') {
                             customFields.style.display = 'block';
+                            inputs.forEach(input => input.disabled = false);
                         } else {
                             customFields.style.display = 'none';
+                            inputs.forEach(input => input.disabled = true);
                         }
                     }
-                    updateMaterialFields(); // Инициализация при загрузке
                 </script>
 
                 <div class="form-group">

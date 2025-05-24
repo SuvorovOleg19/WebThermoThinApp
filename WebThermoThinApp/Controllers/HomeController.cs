@@ -98,10 +98,9 @@ namespace WebThermoThinApp.Controllers
             {
                 return View(model); // покажет ошибки на форме
             }
-            // Устанавливаем свойства материала, если выбран не "custom"
-            if (model.MaterialType != "custom")
+            // Автоматически заполняем свойства для выбранного материала
+            if (model.MaterialType != "custom" && model.AvailableMaterials.TryGetValue(model.MaterialType, out var material))
             {
-                var material = model.AvailableMaterials[model.MaterialType];
                 model.MaterialDensity = material.Density;
                 model.MaterialHeatCapacity = material.HeatCapacity;
                 model.MaterialConductivity = material.Conductivity;

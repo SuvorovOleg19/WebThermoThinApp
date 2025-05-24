@@ -43,15 +43,37 @@ namespace WebThermoThinApp.Models
             {"custom", new Material("Свой материал", 0, 0, 0)}
         };
 
-        [Range(1, double.MaxValue, ErrorMessage = "Плотность должна быть положительной")]
+        [RangeIf("MaterialType", "custom", 0.0001, double.MaxValue,
+            ErrorMessage = "Плотность должна быть положительной")]
         public double MaterialDensity { get; set; }
 
-        [Range(1, double.MaxValue, ErrorMessage = "Теплоемкость должна быть положительной")]
+        [RangeIf("MaterialType", "custom", 0.0001, double.MaxValue,
+            ErrorMessage = "Теплоемкость должна быть положительной")]
         public double MaterialHeatCapacity { get; set; }
 
-        [Range(0.0001, double.MaxValue, ErrorMessage = "Теплопроводность должна быть положительной")]
+        [RangeIf("MaterialType", "custom", 0.0001, double.MaxValue,
+             ErrorMessage = "Теплопроводность должна быть положительной")]
         public double MaterialConductivity { get; set; }
 
+        public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
+        {
+            if (MaterialType == "custom")
+            {
+                if (MaterialDensity == null)
+                    yield return new ValidationResult("Укажите плотность материала",
+                        new[] { nameof(MaterialDensity) });
+
+                if (MaterialHeatCapacity == null)
+                    yield return new ValidationResult("Укажите теплоемкость материала",
+                        new[] { nameof(MaterialHeatCapacity) });
+
+                if (MaterialConductivity == null)
+                    yield return new ValidationResult("Укажите теплопроводность материала",
+                        new[] { nameof(MaterialConductivity) });
+            }
+        }
+
+        [Required(ErrorMessage = "Введите время охлаждения")]
         [Range(0.1, double.MaxValue, ErrorMessage = "Время охлаждения должно быть положительным")]
         public double? CoolingTime { get; set; }
 
@@ -59,6 +81,39 @@ namespace WebThermoThinApp.Models
         [Range(0.0, 1.0, ErrorMessage = "Коэффициент излучения должен быть от 0 до 1")]
         public double? Emissivity { get; set; }
 
+    }
+    // Кастомный атрибут валидации
+    public class RangeIfAttribute : ValidationAttribute
+    {
+        public string PropertyName { get; set; }
+        public object Value { get; set; }
+        public double Minimum { get; set; }
+        public double Maximum { get; set; }
+
+        public RangeIfAttribute(string propertyName, object value, double minimum, double maximum)
+        {
+            PropertyName = propertyName;
+            Value = value;
+            Minimum = minimum;
+            Maximum = maximum;
+        }
+
+        protected override ValidationResult IsValid(object value, ValidationContext context)
+        {
+            var instance = context.ObjectInstance;
+            var type = instance.GetType();
+            var propertyValue = type.GetProperty(PropertyName)?.GetValue(instance, null);
+
+            if (propertyValue?.ToString() == Value.ToString() && value != null)
+            {
+                var val = Convert.ToDouble(value);
+                if (val < Minimum || val > Maximum)
+                {
+                    return new ValidationResult(ErrorMessage);
+                }
+            }
+            return ValidationResult.Success;
+        }
     }
     public class Material
     {
