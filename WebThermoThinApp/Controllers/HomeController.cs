@@ -141,7 +141,7 @@ namespace WebThermoThinApp.Controllers
                         Radius = model.Radius ?? 0,
                         InitialTemp = model.InitialTemp ?? 0,
                         EnvTemp = model.EnvTemp ?? 0,
-                        Material = "Custom",
+                        Material = model.MaterialType,
                         CoolingTime = model.CoolingTime ?? 0,
                         Emissivity = model.Emissivity ?? 0
                     });
