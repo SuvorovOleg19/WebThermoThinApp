@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using WebThermoThinApp.Data;
 
@@ -10,9 +11,11 @@ using WebThermoThinApp.Data;
 namespace WebThermoThinApp.Migrations
 {
     [DbContext(typeof(ThermoThinContext))]
-    partial class ThermoThinContextModelSnapshot : ModelSnapshot
+    [Migration("20250604114600_AddCustomMaterialFieldsToVariant")]
+    partial class AddCustomMaterialFieldsToVariant
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "8.0.11");

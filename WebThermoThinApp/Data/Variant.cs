@@ -18,5 +18,8 @@ namespace WebThermoThinApp.Data
         public string Material { get; set; } // Материал тела
         public double CoolingTime { get; set; } // Время охлаждения
         public double Emissivity { get; set; } // Коэффициент излучения
+        public double? MaterialDensity { get; set; }
+        public double? MaterialHeatCapacity { get; set; }
+        public double? MaterialConductivity { get; set; }
     }
 }

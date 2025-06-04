@@ -53,6 +53,13 @@ namespace WebThermoThinApp.Controllers
                     viewModel.EnvTemp = variant.EnvTemp;
                     viewModel.CoolingTime = variant.CoolingTime;
                     viewModel.Emissivity = variant.Emissivity;
+                    viewModel.MaterialType = variant.Material;
+                    if (variant.Material == "custom")
+                    {
+                        viewModel.MaterialDensity = variant.MaterialDensity ?? 0;
+                        viewModel.MaterialHeatCapacity = variant.MaterialHeatCapacity ?? 0;
+                        viewModel.MaterialConductivity = variant.MaterialConductivity ?? 0;
+                    }
                 }
             }
 
@@ -143,7 +150,10 @@ namespace WebThermoThinApp.Controllers
                         EnvTemp = model.EnvTemp ?? 0,
                         Material = model.MaterialType,
                         CoolingTime = model.CoolingTime ?? 0,
-                        Emissivity = model.Emissivity ?? 0
+                        Emissivity = model.Emissivity ?? 0,
+                        MaterialDensity = model.MaterialType == "custom" ? model.MaterialDensity : (double?)null,
+                        MaterialHeatCapacity = model.MaterialType == "custom" ? model.MaterialHeatCapacity : (double?)null,
+                        MaterialConductivity = model.MaterialType == "custom" ? model.MaterialConductivity : (double?)null
                     });
 
                     _context.SaveChanges();
