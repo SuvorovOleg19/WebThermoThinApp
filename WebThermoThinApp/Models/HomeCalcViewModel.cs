@@ -24,9 +24,11 @@ namespace WebThermoThinApp.Models
         public double? Radius { get; set; }
 
         [Required(ErrorMessage = "Введите начальную температуру")]
+        [Range(0.0001, double.MaxValue, ErrorMessage = "Начальная температура должна быть больше 0")]
         public double? InitialTemp { get; set; }
 
         [Required(ErrorMessage = "Введите температуру среды")]
+        [Range(-20, 40, ErrorMessage = "Температура среды должна быть от -20 до +40")]
         public double? EnvTemp { get; set; }
 
         [Required(ErrorMessage = "Выберите материал или введите свойства")]
